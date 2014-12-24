@@ -1,0 +1,47 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{LKL{\etalchar{+}}13}
+
+\bibitem[Bub]{ColorPicking}
+Michal Bubnár.
+\newblock Color picking tutorial.
+\newblock
+  \url{http://www.mbsoftworks.sk/index.php?page=tutorials&series=1&tutorial=21}.
+
+\bibitem[KSK01]{Szirmay-2001-METR}
+Csaba Kelemen and L{\'a}szl{\'o} Szirmay-Kalos.
+\newblock Simple and robust mutation strategy for metropolis light transport
+  algorithm.
+\newblock Technical Report TR-186-2-01-18, Institute of Computer Graphics and
+  Algorithms, Vienna University of Technology, Favoritenstrasse 9-11/186,
+  A-1040 Vienna, Austria, July 2001.
+\newblock human contact: technical-report@cg.tuwien.ac.at.
+
+\bibitem[LKL{\etalchar{+}}13]{Lehtinen:2013:GML:2461912.2461943}
+Jaakko Lehtinen, Tero Karras, Samuli Laine, Miika Aittala, Fr{\'e}do Durand,
+  and Timo Aila.
+\newblock Gradient-domain metropolis light transport.
+\newblock {\em ACM Trans. Graph.}, 32(4):95:1--95:12, July 2013.
+
+\bibitem[OGL]{OGLAssimp}
+Opengl glsl tutorial 6 - assimp 3d model loader.
+\newblock \url{http://www.youtube.com/watch?v=ClqnhYAYtcY}.
+
+\bibitem[Pho75]{Phong:1975:ICG:360825.360839}
+Bui~Tuong Phong.
+\newblock Illumination for computer generated pictures.
+\newblock {\em Commun. ACM}, 18(6):311--317, June 1975.
+
+\bibitem[PKK00]{Pauly:2000:MLT:647652.732117}
+Mark Pauly, Thomas Kollig, and Alexander Keller.
+\newblock Metropolis light transport for participating media.
+\newblock In {\em Proceedings of the Eurographics Workshop on Rendering
+  Techniques 2000}, pages 11--22, London, UK, UK, 2000. Springer-Verlag.
+
+\bibitem[VG97]{Veach:1997:MLT:258734.258775}
+Eric Veach and Leonidas~J. Guibas.
+\newblock Metropolis light transport.
+\newblock In {\em Proceedings of the 24th Annual Conference on Computer
+  Graphics and Interactive Techniques}, SIGGRAPH '97, pages 65--76, New York,
+  NY, USA, 1997. ACM Press/Addison-Wesley Publishing Co.
+
+\end{thebibliography}

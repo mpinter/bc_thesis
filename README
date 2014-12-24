@@ -1,0 +1,52 @@
+Key Bindings:
+
+Left mouse button – select path or selector
+Right mouse button – rotate camera
+F – switch between free camera mode
+Up arrow – move camera forward
+Down arrow – move camera backward
+Right arrow – camera strafe right
+Left arrow – camera strafe left
+W – move camera up
+S – move camera down
+A – switch between moving and scaling of selectors
+Z – add green selector (start of path)
+X – add red selector (end of path)
+C – add white selector (any vertex, AND)
+V – add yellow selector (any vertex, OR)
+Enter – select active path
+Backspace – clear all paths
+Delete – delete active selector
+Home – delete all selectors
+F1 – decrease the value of limit variable by 10
+F2 – increase the value of limit variable by 10
+F3 – decrease the value of drawLimit variable by 10
+F4 – increase the value of drawLimit variable by 10
+F5 – decrease the value of threshold variable by 10
+F6 – increase the value of threshold variable by 10
+F8 – toggle flagSingle
+F9 – toggle flagPause
+F10 – toggle flagWaiting
+F11 – filter drawn paths
+F12 – switch shader
+
+To run the demo you have to build it for your system, we made this it as easy as possible for you:
+
+To build and run any of the demos on Linux:
+
+$ cd ./one_of_the_demo_folders/build
+$ cmake ..
+$ make
+$ ./test
+
+If you have all of the dependencies installed, use the demo folder. You may need to first add the findXY.cmake directives:
+
+$ cd ./cmake_find_files
+$ cp ./* /path/to/cmake-version/Modules/ (for example /usr/share/cmake-2.8/Modules/)
+
+Otherwise, if you're using Linux, you can try using the demo_includes_libs, which contains all of the dependencies. Your computer still needs to be compatible with OpenGL 3.0 and GLSL 1.3, and your compiler needs to support c++11 standard (and of course, you need Cmake installed). This was tested only on Ubuntu 14.04.
+
+The library is also provided on it's own. If you use it in a separate program, you need to include files from models_and_shaders folder in the same directory as the program executable.
+
+mlt_output.txt contains the original information gathered from a single run of Mitsuba renderer on the sponza scene using the MLT integrator
+mlt_trimmed.txt is the filtered version, containing only vertices

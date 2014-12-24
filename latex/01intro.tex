@@ -1,0 +1,130 @@
+\chapter{Previous works}\label{chap:intro}
+
+In this chapter, theoretical knowledge of Metropolis Light Transport will be presented, independently from it's implementation used in the visualisation application. Variants and improvements are also discussed, presenting the path this method took after it's introduction in the computer graphics field.
+
+\section{Metropolis Light Transport}
+
+First proposed in 1997 by Eric Veach and Leonidas J. Guibas \cite{Veach:1997:MLT:258734.258775}, MLT is a Monte Carlo method for solving the light transport problem, that seeks to improve the time complexity (which, in Monte Carlo evaluations of path-space light transport integrals, is generally closely related to the high number of samples that is required to avoid noise in the final render) by focusing the samples into regions of path space with high contributions to the final image. To do so, MLT calculates the amount of light (flux) flowing along the examined path, and uses this value in conjunction with Metropolis framework to determine whether it accepts or rejects the path. Acceptance probability is computed according to the Metropolis-Hastings algorithm and a new path is always created from the last accepted one using a set of predetermined mutation strategies. Therefore, light paths generated this way always form a Markov chain. In following sections, we'll attempt to explain the basic principles of this algorithm, as proposed in the original paper, hopefully in a more accessible way.
+
+\subsection{Metropolis Sampling}
+
+For every new path, that we get from a mutation run in the previous indentation of our sampling loop, we need to compute the acceptance probability. This is based on Image contribution function, which should, in theory, evaluate how visible is the effect of sampling and recording the information from a particular light path on our final render, so that we can accept the sample with probability proportional to its usefulness. Of course, this is something which is not easily estimated.
+
+Fortunately, since we would use this function only to calculate our probability distribution in Metropolis-Hastings algorithm - which means we don't really need an absolute value of the function, just the distribution of it among the samples - we can use any function that is proportional to the aforementioned one. In our case, the Image contribution function will actually be the amount of light, or the luminous strength, flowing along current path.
+
+The outcome of every mutation is based solely on the previous state, and therefore accepted states, which are in our case light paths, form a Markov chain - a random walk in state space, with predetermined probabilities for each transition. In return, we now know that the probability distribution, as the number of samples approach infinity, always converges to a single - stationary - distribution. The key is to generate and accept light paths as if they were sampled from such distribution.
+
+To make our random walk behave like that, we will design the transition function in a way that the system satisfies the condition of \emph{detailed balance}, or reversibility. That is, given the transition function $K(x|y)$, denoting the probability of transitioning into state $x$, when in state $y$, the condition $K(x|y) = K(y|x)$ must hold for every pair of states $x$ and $y$. To achieve this balance for a particular pair of states (or samples), we first choose an arbitrary, \emph{tentative transition function T}, for both $T(x|y)$ and $T(y|x)$. In MLT, $T$ is given by a mutation strategy. To make the transition function reversible, we must also bear acceptance probability (which we'll define in next segment) in mind, along with the image contribution function $f$ of the particular sample, that we need our probability distribution to be proportional to. To maintain equilibrium, it is sufficient that these densities are equal: 
+\begin{align*}
+f(x)T(y|x)a(y|x)=f(y)T(x|y)a(x|y)
+\end{align*}
+It can be proven that the reversibility attribute of a Markov Chain is equal to it producing samples according to stationary distribution. Furthermore, using this equation we can finally determine the acceptance probability. Since $T$ is arbitrarily chosen and $f$ can be calculated for each path, the only variable left in the equation is the ration $a(y|x)/a(x|y)$. In order to reach equilibrium as quickly as possible, we want to maximize both $a(x|y)$ and $a(y|x)$, therefore:
+\begin{align*}
+a(y|x)=min\left\{\frac{f(y)T(x|y)}{f(x)T(y|x)}, 1\right\}
+\end{align*}    
+
+\subsection{The path integral formulation of light transport}
+
+The initial point of examination is the \emph{light transport equation} between points $x'$ and $x''$ given by
+\begin{align*}
+L(x' \to x'') = L_e(x' \to x'') + \int_M L(x' \to x'')f_s(x \to x' \to x'')G(x' \leftrightarrow x'')dA(x)
+\end{align*} 
+Here, M is the union of all surfaces, A is the area measure on M, $L_e(x' \to x'')$ is the emitted radiance leaving $x'$ in the direction of $x''$,$f_s$ is the bidirectional scattering distribution function (BSDF, this tells us how much of the light is reflected in a particular direction) and $G$ represents the throughput of a differential beam between the point $x$ and $x'$. We assume a geometric model of perfectly incoherent light, travelling in straight lines and being emitted, scattered and absorbed only at surfaces (although the formula was later modified in \cite{Pauly:2000:MLT:647652.732117} so that it accounts for participating media).
+
+By introducing a \emph{filter function} into the equation (expressing the amount of light that is received by a particular pixel - needless to say, this is zero for almost all light paths, expect for the ones which have points lying on lens edge) integrating over all points of the scene and then rewriting the formula into an integration over the path space, we get
+\begin{align*}
+m_j = \int_\Omega f_j(X)d\mu(X)
+\end{align*} 
+Here, $m_j$ represents the amount of light received by pixel \emph{j} , $\mu$ is the area measure and $f_j$ the \emph{measurement contribution function}, created by extracting the appropriate term (the one regarding the subpath we're currently examining) from the expansion of the integration over all points in scene (which we skipped for brevity, since paraphrasing of the original paper has already taken a large enough chunk of this work). $X$ is a path from the path space $\Omega$.
+Each integrand $f_j$ can be written in a form 
+\begin{align*}
+f_j(X) = w_j(X)f(X)
+\end{align*} 
+where w\textsubscript{j} is again the filter function for pixel $j$ and $f$ represent other factors, same for each pixel on the image plane. Knowing this we can compute the estimated lightness of each pixel by sampling $N$ samples according to some distribution $p$ (using the acceptance probability from the previous section) and using the identity
+\begin{align*}
+m_j=E\left[\frac{1}{N}\sum_{i=1}^{N}\frac{w_j(X_i)f(X_i)}{p(X_i)}\right]
+\end{align*} 
+The only missing part we are now left with is the probability distribution $p(X_i)$ or more precisely, since 
+\begin{align*}
+p(X_i)=\frac{f(X_i)}{\int_\Omega f(X_i)d\mu(X_i)}
+\end{align*} 
+we are actually looking for a total amount of radiant power received by the image plane. 
+
+While our transition function maintains detailed balance, the samples themselves will have desired distribution only as $i \to \infty$. This problem, also known as \emph{startup bias} in various kinds of importance sampling methods, is most easily avoided by starting from an approximate equilibrium distribution computed using another sampling algorithm (like bidirectional path tracing). The initial path in the Markov chain is then chosen from the paths generated this way (which are called the seed), with probability proportional to its contribution function - thus, even the first state is, statistically speaking, sampled from the stationary distribution. In \cite{Veach:1997:MLT:258734.258775}, it is suggested to restart the process multiple times with different seeds (each time contributing to the same image).
+
+\subsection{Putting it back together}
+
+To sum up all the mathematics - we fire up the algorithm by collecting a number of samples using a different method, like bidirectional path tracing, to get approximate sample distribution. We then choose an initial state and continue with our Markov chain random walk until we're happy with the result. Path mutations are used to advance to the next state and in each step we have all the parameters we need to calculate both acceptance probability and expected luminance of a pixel (\ref{lst:mlt}).
+
+\begin{listing}
+\begin{minted}[mathescape,
+               numbersep=5pt,
+               frame=lines,
+               framesep=2mm]{c}
+x = GenerateInitialPath()
+image = EmptyImage()
+for i=1 to N
+	y = Mutate(x)
+	a = AcceptationProbability(y|x)
+	if RandomValue() < a
+		x = y
+	RecordSample()
+return image
+\end{minted}
+\caption{Pseudocode of the MLT agorithm, as specified in \cite{Veach:1997:MLT:258734.258775}}
+\label{lst:mlt}
+\end{listing}
+
+It should be noted that so far the equations presented account for monochrome images only. Yet, expanding into colour is straightforward - we simply sample for each part of the desired colour spectrum (like RGB) separately, with image contribution function being the luminance of the sampled spectrum.
+
+\subsection{Path Mutations}
+
+The main disadvantage of MLT lies in the strong correlation of consecutive samples. While this could be beneficial when exploring areas of path space that contribute largely to the final render, it can also mean that the algorithm can get stuck on an unimportant path, having trouble to move on from it. While this is already less likely than the occurrence of the former phenomenon (since we're sampling proportionally to paths importance), we can minimize the chance of it by choosing a wide-enough array of path mutations. And while the vicinity of the less luminous paths may not need as many samples as the one of lighter paths, we still need to sample from all paths that contribute to the final image, otherwise the render will be noisy. In this section we present the mutation strategies used in \cite{Veach:1997:MLT:258734.258775}.
+
+\subsection{Bidirectional mutations}
+
+Perhaps the most straightforward of all, bidirectional mutations allow us to make both small changes, or to throw away the whole path and start with a completely unrelated one. Though the chance of the later is slim in comparison to other possible mutations, it is an important tool in ensuring of the \emph{ergodicity} of a random walk - to satisfy it, it is sufficient when for every state there is a non-zero possibility of transitioning to any other state. That ensures that regardless of the initial sample, the random walk converges to the same ergodic state - the stationary distribution.
+
+When the algorithm chooses to perform a bidirectional mutation, it first chooses a length of the subpath that would be deleted (in terms of number of vertices). Shorter subpaths are preferred - this ensures both high acceptance probability and low cost of a mutation, both of which are requirements for a good mutation strategy. It then chooses two vertices on the path, with distance (naturally, again in terms of vertices) equal to the one previously calculated. Subpath between these two is then removed and replaced by a new one (preferably, but not necessarily, with the same length as the old one). This is done via bidirectional path tracing - one branch starting in first, the other in second vertex, both reaching desired length and then finally connecting. If the path is obstructed, i.e. the final interconnection passes through a wall, the mutation is immediately rejected and a new one is generated.
+
+\subsection{Perturbations} 
+
+Perturbations are MLTs main tool for exploring small areas of high importance. The idea is to take some of the vertices of a light path and move them slightly, thus making a less drastic change to the path then by most of the bidirectional mutations. Each vertex is moved by a random distance R in a random direction $\phi$. The angle $\phi$ is chosen uniformly, while R is exponentially distributed between two arbitrary values $r1 < r2$. 
+
+If the perturbation causes any of the vertices to change the kind of surface they are on, or the light path becomes obstructed, the mutation is automatically discarded. Three kinds of perturbations are proposed in the original paper. We'll use Heckbert's regular expression notation, for denoting surface properties - S, D, E and L stand for specular surface, non-specular (diffuse) surface, lens edge and light source respectively, $+$ and * signs for ``at least one'' and ``zero or more''.
+
+\subsubsection{Lens perturbations}
+
+We delete subpath of the form (L$|$D)DS*E, then reconstruct it starting from lens edge, towards the rest of the light path (whether it continues with a non-specular surface or consists just of the final vertex on a light source). Notice we need the last vertex that is to be modified to lie on a non-specular surface - this allows us to connect the end of the newly generated path to the previous one, since we have more freedom with choosing the direction of a ray that is scattered on non-specular surface, in comparison to specular surfaces where the BSDF is more strict.
+
+\subsubsection{Caustic perturbations}
+
+Because of the subpath form that is imposed on us when doing Lens perturbation, we now need a different technique for exploring neighbourhood of light paths causing caustics, since these are of the form LS$+$DE. Caustic perturbation starts off by deleting the subpath of the form (D$|$L)S*DE and then reconstructs from vertex closest to the light source. Thus, the last vertex of a new subpath lies again on a non-specular surface, which allows for easy connection with lens edge.
+
+\subsubsection{Multi-chain perturbations}
+
+Neither of the aforementioned perturbations work on paths with suffix of the form (D$|$L)DS*DS*DE. This can be handled by chaining perturbations, starting and ending on non-specular surface (or lens edge or light source).
+
+\subsection{Lens subpath mutations} 
+
+Lens subpath mutations help with stratification of the samples over the final render and also with lowering of the cost of the whole algorithm. The idea is to delete the lens subpath - (D$|$L)S*E - and then, with each new mutation, replace it with a subpath aimed at a different pixel on the image plane. This way, the rest of the path is used to it's fullest and not thrown away at the time it could've still been useful.
+
+\section{Improvements over the original MLT}
+
+The interest in Metropolis Light Transport seems to have resurged in recent years, with new theses expanding on the idea of statistically aided Monte Carlo light transport solver. In this section, we will briefly introduce the more prominent ones, ordered by the date they were published, starting from the earliest.
+
+\subsection{Metropolis Light Transport for participating media}
+
+In 2000, MLT was extended to account for participating media. This was done by expanding the path space to include media interactions and then alternating between scattering and propagation events. Scattering event, just like in \cite{Veach:1997:MLT:258734.258775}, chooses a new direction at a point of interaction, while propagation event calculates the distance travelled along a path segment passing through a participating media, before it is scattered. This is done according to transmittance of the medium. If the segment doesn't interact with participating media, the propagation step always chooses the first surface point intersecting with the ray, thus behaving like regular MLT.
+
+The paper also introduced new kind of participating media related mutations - the propagation perturbations - which displace the point of interaction along a certain ray segment.
+
+\subsection{Improved and unified mutation strategy}
+
+The paper starts up by showing, how can the correlation of Markov chain path tracing algorithms lead to increase in integration error, also showing that it's impossible to use a single mutation strategy in path space, without increasing the correlation. It continues to solve this problem by performing mutations in a different, \emph{primary sample space}, which is essentially an infinite-dimensional cube, from which a point in space in sampled, and values gathered from the vector defining this point are then used as inputs for desired path length and BSDF functions at path vertices. Note that even when the vector is infinite in theory, we only need a first couple of values, which are the only ones that will be generated. 
+
+The vector is then mutated, as if we were changing the position of a point in the sample space, and every time we need to look at an additional (not yet generated) dimension, this one is mutated the same amount of times as the rest of the vector was. Since this could lead to massive slowdowns in later stages of the path generation, \emph{large steps} are introduced, which are in a way equivalent to bidirectional mutations that completely replaced the path. These sample a new point in the n-dimensional cube and reset the mutations - so that when a new dimension is needed, it only needs to ``fall back'' towards the last large step. Large steps also help in ensuring of the ergodicity of algorithm. The method therefore uses only two kinds of mutations, instead of the usual array of four or five, while generally improving the efficiency.
+
+\subsection{Gradient-Domain MLT}
+
+Another global illumination algorithm, partly based on Metropolis inspired weighted sampling was published in 2013. Contrary to Veaches implementation, samples are not concentrated around the most luminous paths in the path space, but around areas of largest gradient in image space. This way, the algorithm first generates a rough, noisy image, which provides it with enough data (in from of a 2D image) to use the Poisson solver to fill in the gaps. Furthermore, even if this technique may appear as a too big of an approximation, it was proven that the algorithm is actually unbiased.

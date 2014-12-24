@@ -1,0 +1,41 @@
+\select@language {slovak}
+\contentsline {chapter}{\chapternumberline {1}Previous works}{2}
+\contentsline {section}{\numberline {1.1}Metropolis Light Transport}{2}
+\contentsline {subsection}{Metropolis Sampling}{3}
+\contentsline {subsection}{The path integral formulation of light transport}{4}
+\contentsline {subsection}{Putting it back together}{5}
+\contentsline {subsection}{Path Mutations}{6}
+\contentsline {subsection}{Bidirectional mutations}{6}
+\contentsline {subsection}{Perturbations}{7}
+\contentsline {subsubsection}{Lens perturbations}{7}
+\contentsline {subsubsection}{Caustic perturbations}{8}
+\contentsline {subsubsection}{Multi-chain perturbations}{8}
+\contentsline {subsection}{Lens subpath mutations}{8}
+\contentsline {section}{\numberline {1.2}Improvements over the original MLT}{8}
+\contentsline {subsection}{Metropolis Light Transport for participating media}{9}
+\contentsline {subsection}{Improved and unified mutation strategy}{9}
+\contentsline {subsection}{Gradient-Domain MLT}{10}
+\contentsline {chapter}{\chapternumberline {2}Lvis - light transport visualisation library}{11}
+\contentsline {section}{\numberline {2.1}External libraries and requirements}{11}
+\contentsline {section}{\numberline {2.2}Compilation and usage}{12}
+\contentsline {section}{\numberline {2.3}Implementation}{12}
+\contentsline {subsection}{Class Lvis}{12}
+\contentsline {subsubsection}{Initialization}{13}
+\contentsline {subsubsection}{Threading, flags and public methods}{13}
+\contentsline {subsubsection}{Input, selection \& colour picking}{14}
+\contentsline {subsubsection}{Selector positioning and movement}{15}
+\contentsline {subsubsection}{Drawing}{16}
+\contentsline {subsection}{Camera}{16}
+\contentsline {subsection}{Shaders}{17}
+\contentsline {subsubsection}{Phong illumination model}{18}
+\contentsline {subsection}{Assimp, sceneLoader and meshes}{18}
+\contentsline {subsection}{Sphere selectors}{19}
+\contentsline {subsection}{Light paths}{20}
+\contentsline {subsection}{Virtual Camera}{21}
+\contentsline {chapter}{\chapternumberline {3}Demo program}{23}
+\contentsline {section}{\numberline {3.1}Mitsuba data structure and path generation}{23}
+\contentsline {section}{\numberline {3.2}Demonstration program implementation}{24}
+\contentsline {section}{\numberline {3.3}Images and results}{26}
+\contentsline {chapter}{\chapternumberline {4}Conclusion and future work}{28}
+\contentsline {chapter}{\chapternumberline {5}Manual - Lvis key bindings}{29}
+\contentsline {chapter}{References}{31}
